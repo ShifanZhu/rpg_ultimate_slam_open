@@ -65,7 +65,11 @@ void FrontendVio::processData(const Transformation& T_Bkm1_Bk)
       // KLT-Tracking of features and RANSAC:
       std::vector<real_t> disparities_sq;
       uint32_t num_outliers;
+      auto klt_before = std::chrono::steady_clock::now();
       std::tie(disparities_sq, num_outliers) = trackFrameKLT();
+      auto klt_after = std::chrono::steady_clock::now();
+      auto time_klt = std::chrono::duration_cast<std::chrono::duration<double>>(klt_after - klt_before);
+      // LOG(INFO) << "KLT cost time: " << time_klt.count() << " seconds.";
       uint32_t num_tracked = disparities_sq.size();
 
       motion_type_ = classifyMotion(disparities_sq, num_outliers);

@@ -34,6 +34,9 @@
 #include <ze/common/path_utils.hpp>
 #include <std_msgs/Empty.h>
 
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/highgui/highgui.hpp>
+
 namespace ze {
 
 DataProviderRostopic::DataProviderRostopic(const std::map<std::string, size_t>& imu_topic_imuidx_map,
@@ -182,7 +185,28 @@ void DataProviderRostopic::imgCallback(
     return;
   }
 
-  ze::ImageBase::Ptr img = toImageCpu(*m_img);
+
+  cv_bridge::CvImagePtr cv_ptr;
+  try
+  {
+    cv_ptr = cv_bridge::toCvCopy(m_img, sensor_msgs::image_encodings::BGR8);
+  }
+  catch (cv_bridge::Exception& e)
+  {
+    ROS_ERROR("cv_bridge exception: %s", e.what());
+    return;
+  }
+  cv::Mat gray;
+  cv::cvtColor(cv_ptr->image, gray, CV_BGR2GRAY);
+  // cv::imshow("cv_ptr->image", cv_ptr->image);
+  // cv::waitKey(0);
+  cv_bridge::CvImage cv_image;
+  gray.copyTo(cv_image.image);
+  cv_image.encoding = "mono8";
+  ze::ImageBase::Ptr img = toImageCpu(*(cv_image.toImageMsg()));
+
+
+  // ze::ImageBase::Ptr img = toImageCpu(*m_img);
   camera_callback_(m_img->header.stamp.toNSec(), img, cam_idx);
 }
 

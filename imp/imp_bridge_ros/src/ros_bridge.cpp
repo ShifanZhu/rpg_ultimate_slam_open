@@ -17,6 +17,7 @@ std::pair<PixelType, PixelOrder> getPixelTypeFromRosImageEncoding(
   //! @todo (MWE) we do not support bayer or YUV images yet.
   if (encoding == imgenc::BGR8)
   {
+    LOG(INFO)<<"should not";
     return std::make_pair(PixelType::i8uC3, PixelOrder::bgr);
   }
   else if (encoding == imgenc::MONO8)
